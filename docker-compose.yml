@@ -1,0 +1,38 @@
+version: '3'
+services:
+  db:
+    image: arm64v8/mysql:oracle
+    build:
+      context: ./db
+    platform: 'linux/x86_64'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: docker
+    container_name: golang_api_db
+    ports:
+      - "33060:3306"
+    tty: true
+
+  app:
+    build:
+      context: .
+    command: /bin/sh -c "go run main.go"
+    volumes:
+      - ".:/app"
+    container_name: golang_api
+    ports:
+      - "9000:9000"
+    expose:
+      - 8080
+    tty: true
+    depends_on:
+      - db
+    environment:
+      DB_NAME: test_db
+      DB_USER: docker
+      DB_PASS: docker
+      DB_HOST: golang_api_db
+      API_SECRET: thisisaexampletosecretapivalue
+      TOKEN_HOUR_LIFE_SPAN: 1
